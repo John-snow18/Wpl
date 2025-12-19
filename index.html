@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <title>WPL Orange Cap Leaderboard</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Font (IPL-style) -->
+
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+
+    body {
+
+      font-family: 'Oswald', Arial, sans-serif;
+
+    }
+
+    .vertical-text {
+
+      writing-mode: vertical-rl;
+
+      transform: rotate(180deg);
+
+    }
+
+  </style>
+
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4 relative  bg-[#ff3d00]">
+<!-- BACKGROUND DESIGN -->
+
+<div class="absolute inset-0 -z-10">
+
+  <!-- Gradient -->
+
+  <div class="absolute inset-0 bg-gradient-to-br from-[#ff8c1a] via-[#ff6f00] to-[#ff3d00]"></div>
+
+  <!-- Curved Lines -->
+
+  <svg class="absolute -left-40 top-0 h-full opacity-20" viewBox="0 0 600 1200" fill="none">
+
+    <path d="M500 0 C300 300 300 900 500 1200" stroke="white" stroke-width="6"/>
+
+    <path d="M560 0 C360 320 360 880 560 1200" stroke="white" stroke-width="3"/>
+
+    <path d="M600 0 C420 340 420 860 600 1200" stroke="white" stroke-width="2"/>
+
+  </svg>
+
+</div>
+<div id="app" class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+
+<script>
+
+/* ================= CONFIG ================= */
+
+// 🔴 PASTE ONLY THIS FROM YOUR SHEET URL
+
+const SHEET_ID = "15yEyIQzG3ag064WUPwHkGzIFFf5aYUtobsH1qmu-EZA";
+
+// Sheet tab name (bottom tab name)
+
+const SHEET_TAB = "Leaderboard";
+
+
+// ==========================================
+
+const SHEET_URL =
+
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_TAB}`;
+  
+  const playerColors = {
+  "laura wolvaardt": "bg-blue-700",
+  "smriti mandana": "bg-red-700",
+  "meg lanning": "bg-purple-700"
+};
+
+// ================= FETCH DATA =================
+
+async function fetchLeaderboard() {
+
+  const res = await fetch(SHEET_URL);
+
+  const text = await res.text();
+
+  const json = JSON.parse(text.substring(47).slice(0, -2));
+
+  return json.table.rows.map(r => ({
+
+    id: r.c[0].v,
+
+    name: r.c[1].v,
+
+    team: r.c[2].v,
+
+    runs: r.c[3].v,
+
+    image: r.c[4].v,
+
+    teamLogo: r.c[5].v
+
+  }))
+
+  .sort((a, b) => b.runs - a.runs)
+
+  .slice(0, 3);
+
+}
+
+// ================= RENDER =================
+
+async function render() {
+
+  const players = await fetchLeaderboard();
+
+  const leader = players[0];
+
+  document.getElementById("app").innerHTML = `
+<!-- LEFT : TOP SCORER (IPL STYLE) -->
+<div class="relative bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl shadow-xl overflow-hidden h-[360px]">
+
+  <!-- BIG RUNS -->
+  <div class="absolute left-6 bottom-8 z-20 text-white">
+    <div class="flex items-end gap-2">
+      <h1 class="text-[90px] leading-none font-bold text-[#FFF4E0]">
+        ${leader.runs}
+      </h1>
+      <span class="vertical-text text-xl tracking-widest opacity-90">
+        RUNS
+      </span>
+    </div>
+
+    <p class="mt-2 text-2xl font-bold uppercase text-[#FFE0B2]">
+      ${leader.name}
+    </p>
+
+    <div class="flex items-center gap-3 mt-1">
+      <img src="${leader.teamLogo}" class="h-8" />
+      <span class="text-base opacity-90">${leader.team}</span>
+    </div>
+  </div>
+
+  <!-- PLAYER IMAGE (FORCED INSIDE BOX) -->
+  <div class="absolute right-0 bottom-0 h-full w-[55%] overflow-hidden z-10">
+    <img
+      src="${leader.image}"
+      class="h-full w-full object-cover object-top"
+    />
+  </div>
+
+</div>
+  
+  <!-- RIGHT : LEADERBOARD -->
+
+<div class="bg-orange-600 rounded-2xl shadow-xl p-6 text-white">
+
+  <h2 class="text-3xl font-bold mb-6 tracking-wide text-[#400000] drop-shadow-lg">
+
+    WPL ORANGE CAP LEADERBOARD
+
+  </h2>
+
+  <div class="space-y-4">
+
+    ${players.map(p => {
+
+      const colorClass =
+
+        playerColors[p.name.toLowerCase().trim()] || 'bg-slate-800';
+
+      return `
+
+        <div class="flex rounded-xl overflow-hidden">
+
+          <!-- RUNS -->
+
+          <div class="bg-black/70 w-24 flex items-center justify-center text-3xl font-bold">
+
+            ${p.runs}
+
+          </div>
+
+          <!-- NAME (PLAYER COLOR FIXED) -->
+
+          <div class="${colorClass} flex-1 px-6 py-4">
+
+            <p class="text-xl font-bold uppercase">${p.name}</p>
+
+            <p class="text-sm opacity-80">${p.team}</p>
+
+          </div>
+
+          <!-- LOGO -->
+
+          <div class="bg-black/80 px-4 flex items-center">
+
+            <img src="${p.teamLogo}" class="h-10" />
+
+          </div>
+
+        </div>
+
+      `;
+
+    }).join('')}
+
+  </div>
+
+  <p class="mt-6 text-xs opacity-70">
+
+    Live score leaderboard after every match . 2026 WPL 🏆
+
+  </p>
+
+</div>
+  `;
+
+}
+
+render();
+
+setInterval(render, 15000);
+
+</script>
+
+</body>
+
+</html>
+    
+  </body>
+  
+</html>
